@@ -45,11 +45,22 @@ export default function DriverDashboard() {
     }
   };
 
+  const completeRide = async (rideId) => {
+    try {
+      await axios.post(`http://localhost:5000/api/rides/complete/${rideId}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      alert("Ride marked as completed.");
+      fetchMyRides();
+    } catch (err) {
+      alert("Failed to mark ride as completed.");
+    }
+  };
+
   useEffect(() => {
     fetchAvailable();
     fetchMyRides();
 
-    // Listen for real-time ride updates
     socket.on("new_ride", (newRide) => {
       setAvailableRides(prev => [...prev, newRide]);
     });
@@ -80,6 +91,9 @@ export default function DriverDashboard() {
         {myRides.map(ride => (
           <li key={ride._id}>
             {ride.pickup} → {ride.drop} | Status: {ride.status}
+            {ride.status === 'accepted' && (
+              <button onClick={() => completeRide(ride._id)}>Mark as Completed</button>
+            )}
           </li>
         ))}
       </ul>

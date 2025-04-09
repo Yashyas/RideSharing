@@ -51,6 +51,29 @@ exports.acceptRide = async (req, res) => {
   }
 };
 
+// Ride complete marked by rider.
+exports.completeRide = async (req, res) => {
+  const { rideId } = req.params;
+
+  try {
+    const ride = await Ride.findByIdAndUpdate(
+      rideId,
+      { status: 'completed' },
+      { new: true }
+    ).populate('riderId driverId', 'name email');
+
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('ride_completed', ride); // emits to all riders
+    }
+
+    res.json(ride);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+
 // Rider ride history
 exports.getRiderHistory = async (req, res) => {
   try {
@@ -70,3 +93,4 @@ exports.getDriverRides = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+

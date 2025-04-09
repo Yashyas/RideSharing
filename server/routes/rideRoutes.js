@@ -17,4 +17,8 @@ router.get('/history/:riderId', rideController.getRiderHistory);
 // Driver accepted rides
 router.get('/driver/:driverId', rideController.getDriverRides);
 
+// Complete a ride (driver marks as completed)
+router.post('/complete/:rideId', rideController.completeRide);
+
+
 module.exports = router;
