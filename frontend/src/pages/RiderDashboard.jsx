@@ -33,7 +33,6 @@ export default function RiderDashboard() {
       setPickup("");
       setDrop("");
       fetchRides();
-
       socket.emit("new_ride", response.data);
     } catch (err) {
       alert("Booking failed.");
@@ -71,40 +70,77 @@ export default function RiderDashboard() {
     };
   }, [user]);
 
-  // Separate ongoing and completed rides
   const ongoingRides = rides.filter(r => r.status === "pending" || r.status === "accepted");
   const completedRides = rides.filter(r => r.status === "completed");
 
   return (
-    <div>
-      <h2>Welcome, {user.name}</h2>
-      <h3>Book a Ride</h3>
-      <input placeholder="Pickup Location" value={pickup} onChange={e => setPickup(e.target.value)} />
-      <input placeholder="Drop Location" value={drop} onChange={e => setDrop(e.target.value)} />
-      <button onClick={bookRide}>Book Ride</button>
+    <div className="min-h-screen bg-gray-100 px-4 py-8">
+      <div className="max-w-4xl mx-auto">
+        <h2 className="text-3xl font-bold text-gray-900 mb-6">Welcome, {user.name}</h2>
 
-      <h3>Ongoing Rides</h3>
-      {ongoingRides.length === 0 ? <p>No ongoing rides.</p> : (
-        <ul>
-          {ongoingRides.map(ride => (
-            <li key={ride._id}>
-              {ride.pickup} → {ride.drop} | Status: {ride.status}
-              {ride.driverId && <span> | Driver: {ride.driverId.name}</span>}
-            </li>
-          ))}
-        </ul>
-      )}
+        <div className="bg-white shadow-md rounded-lg p-6 mb-10">
+          <h3 className="text-xl font-semibold text-gray-800 mb-4">Book a Ride</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <input
+              placeholder="Pickup Location"
+              className="px-4 py-2 border border-gray-300 rounded-md"
+              value={pickup}
+              onChange={e => setPickup(e.target.value)}
+            />
+            <input
+              placeholder="Drop Location"
+              className="px-4 py-2 border border-gray-300 rounded-md"
+              value={drop}
+              onChange={e => setDrop(e.target.value)}
+            />
+            <button
+              onClick={bookRide}
+              className="bg-gray-900 text-white rounded-md px-4 py-2 hover:bg-gray-700"
+            >
+              Book Ride
+            </button>
+          </div>
+        </div>
 
-      <h3>Ride History</h3>
-      {completedRides.length === 0 ? <p>No completed rides.</p> : (
-        <ul>
-          {completedRides.map(ride => (
-            <li key={ride._id}>
-              {ride.pickup} → {ride.drop} | Status: {ride.status}
-            </li>
-          ))}
-        </ul>
-      )}
+        <div className="bg-white shadow-md rounded-lg p-6 mb-8">
+          <h3 className="text-xl font-semibold text-gray-800 mb-4">🚗 Ongoing Rides</h3>
+          {ongoingRides.length === 0 ? (
+            <p className="text-gray-500">No ongoing rides.</p>
+          ) : (
+            <ul className="space-y-3">
+              {ongoingRides.map(ride => (
+                <li key={ride._id} className="border border-gray-200 p-4 rounded-md">
+                  <p className="font-medium text-gray-700">
+                    {ride.pickup} → {ride.drop}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Status: <span className="capitalize">{ride.status}</span>
+                    {ride.driverId && <> | Driver: {ride.driverId.name}</>}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <div className="bg-white shadow-md rounded-lg p-6">
+          <h3 className="text-xl font-semibold text-gray-800 mb-4">🕓 Ride History</h3>
+          {completedRides.length === 0 ? (
+            <p className="text-gray-500">No completed rides.</p>
+          ) : (
+            <ul className="space-y-3">
+              {completedRides.map(ride => (
+                <li key={ride._id} className="border border-gray-200 p-4 rounded-md">
+                  <p className="font-medium text-gray-700">
+                    {ride.pickup} → {ride.drop}
+                  </p>
+                  <p className="text-sm text-gray-500">Status: {ride.status}</p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
