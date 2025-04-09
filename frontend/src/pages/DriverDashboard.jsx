@@ -70,6 +70,10 @@ export default function DriverDashboard() {
     };
   }, []);
 
+  // Separate ongoing and completed rides
+  const ongoingRides = myRides.filter(ride => ride.status === "accepted" || ride.status === "pending");
+  const completedRides = myRides.filter(ride => ride.status === "completed");
+
   return (
     <div>
       <h2>Welcome, {user.name}</h2>
@@ -86,17 +90,30 @@ export default function DriverDashboard() {
         </ul>
       )}
 
-      <h3>Your Accepted Rides</h3>
-      <ul>
-        {myRides.map(ride => (
-          <li key={ride._id}>
-            {ride.pickup} → {ride.drop} | Status: {ride.status}
-            {ride.status === 'accepted' && (
-              <button onClick={() => completeRide(ride._id)}>Mark as Completed</button>
-            )}
-          </li>
-        ))}
-      </ul>
+      <h3>Ongoing Rides</h3>
+      {ongoingRides.length === 0 ? <p>No ongoing rides.</p> : (
+        <ul>
+          {ongoingRides.map(ride => (
+            <li key={ride._id}>
+              {ride.pickup} → {ride.drop} | Status: {ride.status}
+              {ride.status === 'accepted' && (
+                <button onClick={() => completeRide(ride._id)}>Mark as Completed</button>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <h3>Ride History</h3>
+      {completedRides.length === 0 ? <p>No completed rides yet.</p> : (
+        <ul>
+          {completedRides.map(ride => (
+            <li key={ride._id}>
+              {ride.pickup} → {ride.drop} | Status: Completed
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

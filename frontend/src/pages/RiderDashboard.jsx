@@ -7,14 +7,14 @@ export default function RiderDashboard() {
   const { user, token } = useContext(AuthContext);
   const [pickup, setPickup] = useState("");
   const [drop, setDrop] = useState("");
-  const [history, setHistory] = useState([]);
+  const [rides, setRides] = useState([]);
 
-  const fetchHistory = async () => {
+  const fetchRides = async () => {
     try {
       const res = await axios.get(`http://localhost:5000/api/rides/history/${user._id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setHistory(res.data);
+      setRides(res.data);
     } catch (err) {
       console.error(err);
     }
@@ -32,9 +32,8 @@ export default function RiderDashboard() {
       alert("Ride booked!");
       setPickup("");
       setDrop("");
-      fetchHistory();
+      fetchRides();
 
-      // Notify drivers
       socket.emit("new_ride", response.data);
     } catch (err) {
       alert("Booking failed.");
@@ -42,24 +41,26 @@ export default function RiderDashboard() {
   };
 
   useEffect(() => {
-    fetchHistory();
+    fetchRides();
 
-    // 🟡 Listen for ride acceptance
     socket.on("ride_accepted", (updatedRide) => {
       if (updatedRide.riderId?._id === user._id) {
-        setHistory(prev => prev.map(ride =>
-          ride._id === updatedRide._id ? updatedRide : ride
-        ));
+        setRides(prev =>
+          prev.map(ride =>
+            ride._id === updatedRide._id ? updatedRide : ride
+          )
+        );
         alert(`Your ride from ${updatedRide.pickup} to ${updatedRide.drop} has been accepted!`);
       }
     });
 
-    // 🟢 Listen for ride completion
     socket.on("ride_completed", (updatedRide) => {
       if (updatedRide.riderId?._id === user._id) {
-        setHistory(prev => prev.map(ride =>
-          ride._id === updatedRide._id ? updatedRide : ride
-        ));
+        setRides(prev =>
+          prev.map(ride =>
+            ride._id === updatedRide._id ? updatedRide : ride
+          )
+        );
         alert(`Your ride from ${updatedRide.pickup} to ${updatedRide.drop} has been completed.`);
       }
     });
@@ -70,6 +71,10 @@ export default function RiderDashboard() {
     };
   }, [user]);
 
+  // Separate ongoing and completed rides
+  const ongoingRides = rides.filter(r => r.status === "pending" || r.status === "accepted");
+  const completedRides = rides.filter(r => r.status === "completed");
+
   return (
     <div>
       <h2>Welcome, {user.name}</h2>
@@ -78,14 +83,28 @@ export default function RiderDashboard() {
       <input placeholder="Drop Location" value={drop} onChange={e => setDrop(e.target.value)} />
       <button onClick={bookRide}>Book Ride</button>
 
-      <h3>Your Ride History</h3>
-      <ul>
-        {history.map(ride => (
-          <li key={ride._id}>
-            {ride.pickup} → {ride.drop} | Status: {ride.status}
-          </li>
-        ))}
-      </ul>
+      <h3>Ongoing Rides</h3>
+      {ongoingRides.length === 0 ? <p>No ongoing rides.</p> : (
+        <ul>
+          {ongoingRides.map(ride => (
+            <li key={ride._id}>
+              {ride.pickup} → {ride.drop} | Status: {ride.status}
+              {ride.driverId && <span> | Driver: {ride.driverId.name}</span>}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <h3>Ride History</h3>
+      {completedRides.length === 0 ? <p>No completed rides.</p> : (
+        <ul>
+          {completedRides.map(ride => (
+            <li key={ride._id}>
+              {ride.pickup} → {ride.drop} | Status: {ride.status}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
