@@ -21,6 +21,12 @@ export default function RiderDashboard() {
   };
 
   const bookRide = async () => {
+    const hasActiveRide = rides.some(r => r.status === "pending" || r.status === "accepted");
+    if (hasActiveRide) {
+      alert("You already have an ongoing ride. Complete it before booking a new one.");
+      return;
+    }
+
     try {
       const response = await axios.post("http://localhost:5000/api/rides/request", {
         riderId: user._id,

@@ -31,6 +31,12 @@ export default function DriverDashboard() {
   };
 
   const acceptRide = async (rideId) => {
+    const hasActiveRide = myRides.some(r => r.status === "accepted" || r.status === "pending");
+    if (hasActiveRide) {
+      alert("You already have an ongoing ride. Complete it before accepting a new one.");
+      return;
+    }
+
     try {
       await axios.post(`http://localhost:5000/api/rides/accept/${rideId}`, {
         driverId: user._id
@@ -78,7 +84,6 @@ export default function DriverDashboard() {
       <div className="max-w-5xl mx-auto">
         <h2 className="text-3xl font-bold text-gray-900 mb-6">Welcome, {user.name}</h2>
 
-        {/* Available Rides */}
         <div className="bg-white shadow-md rounded-lg p-6 mb-8">
           <h3 className="text-xl font-semibold text-gray-800 mb-4">📢 Available Rides</h3>
           {availableRides.length === 0 ? (
@@ -105,7 +110,6 @@ export default function DriverDashboard() {
           )}
         </div>
 
-        {/* Ongoing Rides */}
         <div className="bg-white shadow-md rounded-lg p-6 mb-8">
           <h3 className="text-xl font-semibold text-gray-800 mb-4">🚗 Ongoing Rides</h3>
           {ongoingRides.length === 0 ? (
@@ -134,7 +138,6 @@ export default function DriverDashboard() {
           )}
         </div>
 
-        {/* Completed Rides */}
         <div className="bg-white shadow-md rounded-lg p-6">
           <h3 className="text-xl font-semibold text-gray-800 mb-4">✅ Ride History</h3>
           {completedRides.length === 0 ? (
