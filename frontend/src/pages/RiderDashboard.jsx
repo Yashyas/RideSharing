@@ -34,7 +34,7 @@ export default function RiderDashboard() {
       setDrop("");
       fetchHistory();
 
-      // Emit ride event to notify drivers (optional if backend handles it)
+      // Emit ride event to notify drivers
       socket.emit("new_ride", response.data);
     } catch (err) {
       alert("Booking failed.");
@@ -43,7 +43,18 @@ export default function RiderDashboard() {
 
   useEffect(() => {
     fetchHistory();
-  }, []);
+
+    // Listen for ride acceptance updates
+    socket.on("ride_accepted", (updatedRide) => {
+      if (updatedRide.riderId._id === user._id) {
+        setHistory(prev => prev.map(ride => ride._id === updatedRide._id ? updatedRide : ride));
+      }
+    });
+
+    return () => {
+      socket.off("ride_accepted");
+    };
+  }, [user]);
 
   return (
     <div>
